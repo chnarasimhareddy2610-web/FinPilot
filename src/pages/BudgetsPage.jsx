@@ -2,13 +2,11 @@ import React, { useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
 import {
   Badge,
-  Card,
   EmptyState,
   FieldError,
   InlineAlert,
   Modal,
   ProgressBar,
-  SectionCard,
 } from '../components/ui.jsx'
 import { useFinance } from '../store/FinanceProvider.jsx'
 import {
@@ -18,12 +16,7 @@ import {
   suggestBudgetLimit,
 } from '../services/budgetService.js'
 import { CATEGORIES } from '../services/transactionService.js'
-import {
-  addMonths,
-  formatCurrency,
-  formatPercent,
-  monthLabel,
-} from '../utils/format.js'
+import { addMonths, formatCurrency, formatPercent, monthLabel } from '../utils/format.js'
 
 const statusBadge = (status) => {
   switch (status) {
@@ -128,66 +121,100 @@ export const BudgetsPage = ({ month }) => {
   )
 
   const summaryFigures = [
-    { label: 'Monthly limits', value: formatCurrency(summary.totalBudget), hint: `${Object.keys(budgets).length} categories funded` },
-    { label: 'Spent against limits', value: formatCurrency(summary.totalSpent), hint: `${formatCurrency(summary.unbudgetedSpending)} outside budgets` },
-    { label: 'Remaining', value: formatCurrency(summary.totalRemaining), hint: summary.totalRemaining < 0 ? 'Limits exceeded' : 'Left for the month' },
-    { label: 'Utilisation', value: formatPercent(summary.overallUtilization, 0), hint: `${summary.overspendingCategories.length} over · ${summary.atRiskCategories.length} close` },
+    {
+      label: 'Monthly limits',
+      value: formatCurrency(summary.totalBudget),
+      hint: `${Object.keys(budgets).length} categories funded`,
+    },
+    {
+      label: 'Spent against limits',
+      value: formatCurrency(summary.totalSpent),
+      hint: `${formatCurrency(summary.unbudgetedSpending)} outside budgets`,
+    },
+    {
+      label: 'Remaining',
+      value: formatCurrency(summary.totalRemaining),
+      hint: summary.totalRemaining < 0 ? 'Limits exceeded' : 'Left for the month',
+      warn: summary.totalRemaining < 0,
+    },
+    {
+      label: 'Utilisation',
+      value: formatPercent(summary.overallUtilization, 0),
+      hint: `${summary.overspendingCategories.length} over · ${summary.atRiskCategories.length} close`,
+    },
   ]
 
+  const overspendTotal = summary.overspendingCategories.reduce(
+    (total, row) => total + row.overspend,
+    0
+  )
+
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       {notice ? (
         <InlineAlert tone="positive" onDismiss={() => setNotice('')}>
           {notice}
         </InlineAlert>
       ) : null}
 
-      {/* One dark band holds the whole month's budget position. */}
-      <div className="reveal grid grid-cols-2 border border-navy bg-navy text-cream lg:grid-cols-4">
+      {/* Position band: same report grammar as Overview and Analysis. */}
+      <dl className="reveal grid grid-cols-2 border-y border-rule lg:grid-cols-4">
         {summaryFigures.map((figure, index) => (
           <div
             key={figure.label}
-            className={`px-5 py-4 ${index % 2 === 1 ? 'border-l border-cream/18' : ''} ${
-              index > 1 ? 'border-t border-cream/18 lg:border-t-0' : ''
-            } ${index > 0 ? 'lg:border-l lg:border-cream/18' : ''}`}
+            className={`py-4 lg:px-6 ${index < 2 ? 'border-b border-rule lg:border-b-0' : ''} ${
+              index % 2 === 1 ? 'border-l border-rule pl-5 lg:pl-6' : ''
+            } ${index > 0 ? 'lg:border-l lg:border-rule' : ''} ${index === 0 ? 'lg:pl-0' : ''}`}
           >
-            <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-cream/50">{figure.label}</p>
-            <p className={`num mt-2 text-[19px] leading-none ${figure.label === 'Remaining' && summary.totalRemaining < 0 ? 'text-coral' : 'text-white'}`}>
+            <dt className="ledger-head">{figure.label}</dt>
+            <dd
+              className={`num mt-2 text-[22px] leading-none ${
+                figure.warn ? 'text-coral' : 'text-white'
+              }`}
+            >
               <span key={figure.value} className="metric-swap">
                 {figure.value}
               </span>
-            </p>
-            <p className="mt-1.5 text-[10px] leading-tight text-cream/50">{figure.hint}</p>
+            </dd>
+            <p className="mt-1.5 text-[10.5px] leading-tight text-muted">{figure.hint}</p>
           </div>
         ))}
-      </div>
+      </dl>
 
-      {summary.overspendingCategories.length > 0 ? (
-        <InlineAlert tone="warning">
-          <span className="font-medium">
-            {summary.overspendingCategories.length} categor
-            {summary.overspendingCategories.length === 1 ? 'y is' : 'ies are'} over limit:
-          </span>{' '}
-          {summary.overspendingCategories
-            .map((row) => `${row.category} by ${formatCurrency(row.overspend)}`)
-            .join(', ')}
-          . Trimming these first protects your savings rate.
-        </InlineAlert>
-      ) : null}      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-rule-strong pb-3">
-        <div>
-          <p className="eyebrow text-[9px]">Category limits</p>
-          <p className="mt-1 text-[10.5px] text-muted">
-            Limits apply to every month. Spending shown is for {monthLabel(month)}.
-          </p>
+      <div>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">
+              Category limits
+            </h2>
+            <p className="mt-1 text-[11.5px] text-muted">
+              Limits apply to every month. Spending shown is for {monthLabel(month)}.
+            </p>
+          </div>
+          <button type="button" onClick={() => openCreate()} className="btn btn-primary">
+            <Icon name="plus" className="h-3.5 w-3.5" />
+            Set budget
+          </button>
         </div>
-        <button type="button" onClick={() => openCreate()} className="btn btn-primary">
-          <Icon name="plus" className="h-3.5 w-3.5" />
-          Set budget
-        </button>
+
+        {summary.overspendingCategories.length > 0 ? (
+          <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-l border-coral/60 pl-3.5">
+            <p className="text-[11.5px]">
+              <span className="font-medium text-coral">
+                {summary.overspendingCategories.length} categor
+                {summary.overspendingCategories.length === 1 ? 'y' : 'ies'} over limit
+              </span>{' '}
+              <span className="num text-cream/80">by {formatCurrency(overspendTotal)}</span>
+            </p>
+            <p className="text-[11px] text-muted">
+              {summary.overspendingCategories.map((row) => row.category).join(' · ')}
+            </p>
+          </div>
+        ) : null}
       </div>
 
-      <Card className="overflow-hidden">
-        {rows.length === 0 ? (
+      {rows.length === 0 ? (
+        <div className="border-y border-rule">
           <EmptyState
             icon="budgets"
             title="No budgets yet"
@@ -199,98 +226,121 @@ export const BudgetsPage = ({ month }) => {
               </button>
             }
           />
-        ) : (
-          <>
-            <div className="hidden grid-cols-12 gap-4 border-b border-rule-strong bg-cream-soft/70 px-5 py-2 lg:grid">
-              <p className="ledger-head col-span-3 font-medium ledger-head-ink">Category</p>
-              <p className="ledger-head col-span-5 font-medium ledger-head-ink">Utilisation</p>
-              <p className="ledger-head col-span-2 text-right font-medium ledger-head-ink">Spent / limit</p>
-              <p className="ledger-head col-span-2 text-right font-medium ledger-head-ink">Remaining</p>
-            </div>
-            <ul className="divide-y divide-rule">
-              {rows.map((row) => {
-                const badge = statusBadge(row.status)
-                return (
-                  <li key={row.category} className="ledger-row px-5 py-3.5">
-                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:items-center lg:gap-4">
-                      <div className="min-w-0 lg:col-span-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-[12.5px] font-medium text-ink">{row.category}</p>
-                          <Badge tone={badge.tone}>{badge.label}</Badge>
-                        </div>
-                        <p className="mt-1 font-mono text-[9.5px] uppercase tracking-[0.06em] text-muted lg:hidden">
-                          {formatCurrency(row.actual)} of {formatCurrency(row.limit)}
-                        </p>
-                      </div>
+        </div>
+      ) : (
+        <section>
+          <div className="hidden grid-cols-12 gap-4 border-b border-rule py-2.5 lg:grid">
+            <p className="ledger-head col-span-4 font-medium">Category</p>
+            <p className="ledger-head col-span-5 font-medium">Utilisation</p>
+            <p className="ledger-head col-span-2 text-right font-medium">Remaining</p>
+            <span className="col-span-1" />
+          </div>
 
-                      <div className="lg:col-span-5">
-                        <ProgressBar
-                          value={row.utilization}
-                          tone={row.status === BUDGET_STATUS.OVER ? 'coral' : row.status === BUDGET_STATUS.AT_RISK ? 'soft' : 'navy'}
-                          label={`${row.category} budget utilisation`}
-                        />
-                        <div className="mt-1 flex items-center justify-between font-mono text-[9.5px] text-muted">
-                          <span>{formatPercent(row.utilization, 0)} used</span>
-                          <span>{row.remaining < 0 ? 'Limit exceeded' : `${formatPercent(100 - row.utilization, 0)} available`}</span>
-                        </div>
+          <ul>
+            {rows.map((row) => {
+              const badge = statusBadge(row.status)
+              const over = row.remaining < 0
+              return (
+                <li
+                  key={row.category}
+                  className="ledger-row group border-b border-rule/70 py-4"
+                >
+                  <div className="grid grid-cols-1 gap-x-4 gap-y-3 lg:grid-cols-12 lg:items-center">
+                    <div className="min-w-0 lg:col-span-4">
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                        <p className="text-[13px] font-medium text-ink">{row.category}</p>
+                        <Badge tone={badge.tone}>{badge.label}</Badge>
                       </div>
+                      <p className="num mt-1 text-[10.5px] text-muted">
+                        {formatCurrency(row.actual)} of {formatCurrency(row.limit)}
+                      </p>
+                    </div>
 
-                      <div className="hidden text-right lg:col-span-2 lg:block">
-                        <p className="num text-[11.5px] text-ink">{formatCurrency(row.actual)}</p>
-                        <p className="num text-[10px] text-muted">of {formatCurrency(row.limit)}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-3 lg:col-span-2 lg:justify-end">
-                        <div className="text-left lg:text-right">
-                          <p className={`num text-[12.5px] font-medium ${row.remaining < 0 ? 'text-coral' : 'text-navy'}`}>
-                            {row.remaining < 0 ? '−' : ''}
-                            {formatCurrency(Math.abs(row.remaining))}
-                          </p>
-                          <p className="font-mono text-[9px] uppercase tracking-[0.08em] text-muted">
-                            {row.remaining < 0 ? 'over limit' : 'remaining'}
-                          </p>
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            type="button"
-                            onClick={() => openEdit(row)}
-                            aria-label={`Edit ${row.category} budget`}
-                            className="p-1 text-muted transition-colors hover:text-navy"
-                          >
-                            <Icon name="edit" className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteTarget(row)}
-                            aria-label={`Delete ${row.category} budget`}
-                            className="p-1 text-muted transition-colors hover:text-coral"
-                          >
-                            <Icon name="trash" className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                    <div className="lg:col-span-5">
+                      <ProgressBar
+                        value={row.utilization}
+                        tone={
+                          row.status === BUDGET_STATUS.OVER
+                            ? 'coral'
+                            : row.status === BUDGET_STATUS.AT_RISK
+                              ? 'soft'
+                              : 'navy'
+                        }
+                        height={4}
+                        label={`${row.category} budget utilisation`}
+                      />
+                      <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted">
+                        <span className="num">{formatPercent(row.utilization, 0)} used</span>
+                        <span className="num">
+                          {over ? 'Limit exceeded' : `${formatPercent(100 - row.utilization, 0)} available`}
+                        </span>
                       </div>
                     </div>
-                  </li>
-                )
-              })}
-            </ul>
-          </>
-        )}
-      </Card>
+
+                    <div className="flex items-center justify-between gap-3 lg:col-span-2 lg:justify-end">
+                      <div className="text-left lg:text-right">
+                        <p
+                          className={`num text-[14px] font-medium ${
+                            over ? 'text-coral' : 'text-cream'
+                          }`}
+                        >
+                          {over ? '−' : ''}
+                          {formatCurrency(Math.abs(row.remaining))}
+                        </p>
+                        <p className="text-[10px] text-muted">{over ? 'over limit' : 'remaining'}</p>
+                      </div>
+
+                      <div className="flex items-center gap-0.5 opacity-100 transition-opacity duration-150 focus-within:opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(row)}
+                          aria-label={`Edit ${row.category} budget`}
+                          className="rounded-md p-1.5 text-muted transition-colors hover:bg-white/[0.06] hover:text-cream"
+                        >
+                          <Icon name="edit" className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTarget(row)}
+                          aria-label={`Delete ${row.category} budget`}
+                          className="rounded-md p-1.5 text-muted transition-colors hover:bg-coral/10 hover:text-coral"
+                        >
+                          <Icon name="trash" className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      )}
 
       {unbudgeted.length > 0 ? (
-        <SectionCard
-          index="01"
-          title="Spending without a limit"
-          description="These categories have expenses this month but no budget"
-        >
-          <ul className="divide-y divide-ink/10">
+        <section className="border-t border-rule pt-8">
+          <div>
+            <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">
+              Spending without a limit
+            </h2>
+            <p className="mt-1 text-[11.5px] text-muted">
+              These categories have expenses this month but no budget
+            </p>
+          </div>
+          <ul className="mt-4">
             {unbudgeted.map((item) => (
-              <li key={item.category} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
+              <li
+                key={item.category}
+                className="flex flex-wrap items-center justify-between gap-3 border-b border-rule/70 py-3 last:border-b-0"
+              >
                 <div>
-                  <p className="text-[12.5px] font-medium text-ink">{item.category}</p>
-                  <p className="font-mono text-[9.5px] uppercase tracking-[0.06em] text-muted">
-                    Suggested {formatCurrency(suggestBudgetLimit(item.category, transactions, recentMonths))} · last three months
+                  <p className="text-[13px] font-medium text-ink">{item.category}</p>
+                  <p className="mt-0.5 text-[10.5px] text-muted">
+                    Suggested{' '}
+                    <span className="num">
+                      {formatCurrency(suggestBudgetLimit(item.category, transactions, recentMonths))}
+                    </span>{' '}
+                    · last three months
                   </p>
                 </div>
                 <button
@@ -303,7 +353,7 @@ export const BudgetsPage = ({ month }) => {
               </li>
             ))}
           </ul>
-        </SectionCard>
+        </section>
       ) : null}
 
       <Modal
@@ -336,7 +386,7 @@ export const BudgetsPage = ({ month }) => {
                 setForm({ category, amount: category ? String(suggestedAmountFor(category)) : '' })
                 setErrors({})
               }}
-              className="field disabled:bg-cream disabled:text-muted"
+              className="field disabled:bg-white/5 disabled:text-muted"
             >
               <option value="">Select a category</option>
               {availableCategories.map((category) => (
@@ -368,7 +418,7 @@ export const BudgetsPage = ({ month }) => {
               <button
                 type="button"
                 onClick={() => setForm({ ...form, amount: String(suggestedAmount) })}
-                className="link-underline mt-2 text-[11.5px] font-medium text-navy"
+                className="link-underline mt-2 text-[11.5px] font-medium text-cream"
               >
                 Use suggested limit of {formatCurrency(suggestedAmount)}
               </button>
@@ -397,10 +447,11 @@ export const BudgetsPage = ({ month }) => {
         }
       >
         {deleteTarget ? (
-          <div className="border border-ink/18 bg-cream/60 px-3 py-2">
-            <p className="text-[12px] font-medium text-ink">{deleteTarget.category}</p>
-            <p className="num mt-0.5 text-[10.5px] text-muted">
-              Limit {formatCurrency(deleteTarget.limit)} · spent {formatCurrency(deleteTarget.actual)}
+          <div className="border-l border-coral/50 pl-4">
+            <p className="text-[12.5px] font-medium text-ink">{deleteTarget.category}</p>
+            <p className="num mt-1 text-[11px] text-muted">
+              Limit {formatCurrency(deleteTarget.limit)} · spent{' '}
+              {formatCurrency(deleteTarget.actual)}
             </p>
           </div>
         ) : null}

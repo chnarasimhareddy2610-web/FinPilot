@@ -26,3 +26,6 @@ Thumbs.db
 # Generated verification screenshots
 /preview_*.png
 /screenshot_*.png
+
+# Visual QA captures
+/refine_*.png

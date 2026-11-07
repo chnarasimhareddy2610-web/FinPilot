@@ -63,11 +63,6 @@ function App() {
     [page]
   )
 
-  const activeIndex = useMemo(
-    () => String(NAV_ITEMS.findIndex((item) => item.id === activeItem.id) + 1).padStart(2, '0'),
-    [activeItem]
-  )
-
   const renderPage = () => {
     switch (page) {
       case 'transactions':
@@ -88,83 +83,81 @@ function App() {
 
   const navContent = (
     <>
-      <div className="border-b border-rule-strong px-5 pb-4 pt-5">
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 block h-7 w-px bg-navy-soft" aria-hidden="true" />
-          <div>
-            <p className="flex items-baseline font-display text-[23px] leading-none text-cream">
-              Fin<span className="mx-[1px] text-coral">/</span>Pilot
-            </p>
-            <p className="font-mono text-[8.5px] uppercase tracking-[0.24em] text-cream/40">
-              Personal ledger
-            </p>
-          </div>
-        </div>
+      <div className="px-5 pb-6 pt-7">
+        <button
+          type="button"
+          onClick={() => navigate('overview')}
+          className="group flex items-center gap-2.5 text-left"
+          aria-label="FinPilot overview"
+        >
+          <span className="flex h-8 w-8 items-center justify-center rounded-full border border-cream/15 bg-cream/[0.04] text-cream/85 transition-colors group-hover:border-coral/40 group-hover:text-coral">
+            <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <path d="M3 14.5c2.4-3.6 4.4-3.6 6.8 0s4.4 3.6 6.8 0 2.6-2.8 4.4-2.2" />
+            </svg>
+          </span>
+          <span>
+            <span className="block text-[16.5px] font-medium leading-none tracking-[-0.03em] text-white">
+              FinPilot
+            </span>
+            <span className="mt-1.5 block text-[10px] leading-none text-cream/40">
+              Personal finance
+            </span>
+          </span>
+        </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-3" aria-label="Primary">
-        <p className="mb-2.5 ml-3 font-mono text-[8.5px] uppercase tracking-[0.2em] text-cream/35">
-          Sections
-        </p>
-        {NAV_ITEMS.map((item, index) => {
-          const isActive = page === item.id
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => navigate(item.id)}
-              aria-current={isActive ? 'page' : undefined}
-              className={`nav-item group flex w-full items-center gap-3 px-3 py-2.5 text-left text-[12.5px] ${
-                isActive
-                  ? 'bg-navy-soft text-cream'
-                  : 'text-cream/55 hover:bg-white/[0.04] hover:text-cream'
-              }`}
-            >
-              <span
-                className={`font-mono text-[8.5px] tracking-[0.12em] ${
-                  isActive ? 'text-coral' : 'text-cream/30'
+      <nav className="flex-1 overflow-y-auto px-2.5 pb-3" aria-label="Primary">
+        <div className="space-y-0.5">
+          {NAV_ITEMS.map((item) => {
+            const isActive = page === item.id
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => navigate(item.id)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`nav-item group flex w-full items-center gap-3 px-3 py-2.5 text-left text-[13px] ${
+                  isActive ? 'text-white' : 'text-cream/55 hover:text-cream'
                 }`}
               >
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <Icon
-                name={item.icon}
-                className={`h-3.5 w-3.5 ${isActive ? 'text-cream' : 'text-cream/40 group-hover:text-cream/80'}`}
-              />
-              <span className={`flex-1 ${isActive ? 'font-medium' : ''}`}>{item.label}</span>
-            </button>
-          )
-        })}
+                <Icon
+                  name={item.icon}
+                  className={`h-4 w-4 shrink-0 transition-colors ${
+                    isActive ? 'text-coral' : 'text-cream/35 group-hover:text-cream/70'
+                  }`}
+                />
+                <span className="flex-1">{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
       </nav>
 
-      <div className="border-t border-rule-strong px-5 py-4">
+      <div className="border-t border-rule px-5 py-4">
         <div className="flex items-center gap-2">
-          <span className="mt-0.5 h-1.5 w-1.5 bg-coral" aria-hidden="true" />
-          <p className="font-mono text-[8.5px] uppercase tracking-[0.18em] text-cream/65">
-            Local only
-          </p>
+          <span className="h-1 w-1 rounded-full bg-coral/80" aria-hidden="true" />
+          <p className="text-[10.5px] text-cream/60">Stored in this browser</p>
         </div>
-        <p className="mt-1.5 text-[10.5px] leading-relaxed text-cream/40">
-          Records stay in this browser. No account, no bank link, no data leaves your device.
-        </p>
-        <p className="mt-2.5 font-mono text-[8.5px] uppercase tracking-[0.18em] text-cream/22">
-          FinPilot — Vol. 2
+        <p className="mt-1.5 text-[10px] leading-[1.6] text-cream/35">
+          No account, no bank link. Nothing leaves your device.
         </p>
       </div>
     </>
   )
 
   return (
-    <div className="min-h-screen bg-navy" data-scroll-dark>
+    <div className="relative min-h-screen">
+      <div className="app-atmosphere pointer-events-none fixed inset-0 -z-10" aria-hidden="true" />
+
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[70] focus:bg-cream focus:px-3 focus:py-2 focus:text-sm focus:text-navy"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[70] focus:rounded-full focus:bg-cream focus:px-4 focus:py-2 focus:text-sm focus:text-navy"
       >
         Skip to content
       </a>
 
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[15.5rem] flex-col border-r border-cream/12 bg-navy lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[15.5rem] flex-col border-r border-rule bg-[rgba(8,14,28,0.55)] backdrop-blur-2xl lg:flex">
         {navContent}
       </aside>
 
@@ -174,36 +167,29 @@ function App() {
           <button
             type="button"
             aria-label="Close navigation"
-            className="scrim absolute inset-0 bg-navy-deep/70"
+            className="scrim absolute inset-0 bg-navy-deep/80 backdrop-blur-sm"
             onClick={() => setNavOpen(false)}
           />
-          <aside className="dialog-panel relative flex h-full w-[16.5rem] max-w-[85vw] flex-col border-r border-cream/12 bg-navy">
+          <aside className="dialog-panel relative flex h-full w-[16.5rem] max-w-[85vw] flex-col border-r border-rule bg-[rgba(8,14,28,0.94)] backdrop-blur-2xl">
             {navContent}
           </aside>
         </div>
       ) : null}
 
-      <div className="bg-paper lg:pl-[16rem]">
-        <header className="sticky top-0 z-30 border-b border-rule-strong bg-paper/92 backdrop-blur-sm">
-          <div className="mx-auto flex h-12 max-w-[1280px] items-center gap-3 px-4 sm:px-6 lg:px-10">
+      <div className="lg:pl-[16rem]">
+        <header className="sticky top-0 z-30 border-b border-rule bg-[rgba(9,16,32,0.62)] backdrop-blur-2xl">
+          <div className="mx-auto flex h-14 max-w-[1280px] items-center gap-3 px-4 sm:px-6 lg:px-10">
             <button
               type="button"
               onClick={() => setNavOpen(true)}
-              className="border border-rule-strong bg-surface p-1.5 text-ink lg:hidden"
+              className="rounded-full border border-rule bg-white/5 p-2 text-cream transition-colors hover:border-cream/30 lg:hidden"
               aria-label="Open navigation"
               aria-expanded={navOpen}
             >
               <Icon name="menu" className="h-4 w-4" />
             </button>
 
-            <div className="min-w-0 flex-1">
-              <p className="font-mono text-[8.5px] uppercase tracking-[0.22em] text-muted">
-                Section {activeIndex} / 06
-              </p>
-              <p className="mt-0.5 truncate font-display text-[16px] leading-none text-ink">
-                {activeItem.label}
-              </p>
-            </div>
+            <div className="min-w-0 flex-1" />
 
             <label className="sr-only" htmlFor="month-select">
               Select month
@@ -213,7 +199,7 @@ function App() {
                 id="month-select"
                 value={month}
                 onChange={(event) => setMonth(event.target.value)}
-                className="field appearance-none py-1.5 pl-3 pr-8 font-mono text-[11px] text-ink"
+                className="field appearance-none py-1.5 pl-3 pr-8 text-[11px] text-cream"
               >
                 {months.map((value) => (
                   <option key={value} value={value}>
@@ -235,33 +221,15 @@ function App() {
           </div>
         </header>
 
-        <main id="main-content" className="mx-auto max-w-[1280px] px-4 pb-14 pt-7 sm:px-6 lg:px-10 lg:pt-8">
-          <div className="border-b border-rule-strong pb-5 lg:grid lg:grid-cols-12 lg:items-end lg:gap-6">
-            <div className="lg:col-span-8">
-              <p className="eyebrow flex items-center gap-2">
-                <span className="text-coral eyebrow-accent">§{activeIndex}</span>
-                <span className="h-px w-5 bg-rule-strong" aria-hidden="true" />
-                {activeItem.label}
-              </p>
-              <h1 className="mt-1.5 text-[32px] leading-[0.98] text-ink sm:text-[40px]">
-                {monthLabel(month)}
-              </h1>
-              <p className="mt-2 max-w-xl text-[12.5px] leading-relaxed text-muted">
-                {activeItem.blurb}
-              </p>
-            </div>
-            <div className="hidden lg:flex lg:col-span-4 lg:justify-end lg:border-l lg:border-rule-strong lg:pl-6">
-              <div className="flex gap-6">
-                <div>
-                  <p className="ledger-head">Reporting period</p>
-                  <p className="num mt-0.5 text-[12px] text-ink">{month}</p>
-                </div>
-                <div className="text-right">
-                  <p className="ledger-head">Currency</p>
-                  <p className="num mt-0.5 text-[12px] text-ink">INR ₹</p>
-                </div>
-              </div>
-            </div>
+        <main id="main-content" className="mx-auto max-w-[1280px] px-4 pb-16 pt-8 sm:px-6 lg:px-10 lg:pt-10">
+          <div className="pb-9">
+            <p className="eyebrow">{activeItem.label}</p>
+            <h1 className="mt-3 text-[38px] leading-[0.94] text-white sm:text-[52px]">
+              {monthLabel(month)}
+            </h1>
+            <p className="mt-3.5 max-w-lg text-[12.5px] leading-relaxed text-cream/55">
+              {activeItem.blurb}
+            </p>
           </div>
 
           {persistenceError ? (
@@ -273,14 +241,14 @@ function App() {
             </div>
           ) : null}
 
-          <div key={page} className="page-enter mt-6">
+          <div key={page} className="page-enter mt-2">
             {renderPage()}
           </div>
 
-          <footer className="mt-12 flex flex-col gap-2 border-t border-rule-strong pt-4 text-[10px] text-muted leading-relaxed sm:flex-row sm:items-end sm:justify-between">
-            <p>FinPilot stores your records in this browser&apos;s LocalStorage. Insights are generated locally with
+          <footer className="mt-14 flex flex-col gap-2 border-t border-rule pt-5 text-[10.5px] leading-relaxed text-muted sm:flex-row sm:items-end sm:justify-between">
+            <p className="max-w-2xl">FinPilot stores your records in this browser&apos;s LocalStorage. Insights are generated locally with
 explainable rules and statistics — no external AI service is called.</p>
-            <p className="font-mono uppercase tracking-[0.18em]">{monthLabel(month, { short: true })} — Ledger</p>
+            <p>{monthLabel(month, { short: true })} · Ledger</p>
           </footer>
         </main>
       </div>

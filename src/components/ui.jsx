@@ -11,25 +11,21 @@ export const SectionCard = ({
   title,
   description,
   action,
-  index,
   className = '',
   bodyClassName = '',
   children,
 }) => (
   <section className={`card ${className}`}>
-    <div className="flex flex-wrap items-start justify-between gap-2 border-b border-rule-strong px-5 py-4">
+    <div className="flex flex-wrap items-start justify-between gap-2 px-5 pb-3.5 pt-5">
       <div className="min-w-0">
-        <div className="flex items-baseline gap-2">
-          {index ? <span className="section-index">{index}</span> : null}
-          <h2 className="text-[15.5px] text-ink">{title}</h2>
-        </div>
+        <h2 className="text-[15px] font-medium tracking-[-0.02em] text-white">{title}</h2>
         {description ? (
-          <p className="mt-0.5 text-[11.5px] leading-snug text-muted">{description}</p>
+          <p className="mt-1 text-[11.5px] leading-snug text-muted">{description}</p>
         ) : null}
       </div>
       {action}
     </div>
-    <div className={`px-5 py-4 ${bodyClassName}`}>{children}</div>
+    <div className={`px-5 pb-5 ${bodyClassName}`}>{children}</div>
   </section>
 )
 
@@ -42,10 +38,8 @@ const TONE_TEXT = {
 
 export const Stat = ({ label, value, hint, tone = 'neutral', icon, accent = false, index }) => (
   <div
-    className={`reveal relative overflow-hidden px-5 py-4 ${
-      accent
-        ? 'border border-navy-soft bg-navy text-cream'
-        : 'border border-rule-strong bg-surface text-ink'
+    className={`reveal relative overflow-hidden rounded-[var(--radius-card)] px-5 py-4 ${
+      accent ? 'plate text-cream' : 'card text-ink'
     }`}
   >
     {!accent ? <span className="absolute inset-x-0 top-0 h-px bg-rule-strong" aria-hidden="true" /> : null}
@@ -74,10 +68,10 @@ export const Stat = ({ label, value, hint, tone = 'neutral', icon, accent = fals
 )
 
 const PROGRESS_TONE = {
-  navy: 'bg-navy',
-  soft: 'bg-navy-soft',
+  navy: 'bg-cream/85',
+  soft: 'bg-cream/55',
   coral: 'bg-coral',
-  muted: 'bg-muted/55',
+  muted: 'bg-cream/25',
 }
 
 export const ProgressBar = ({ value = 0, tone = 'navy', height = 5, label }) => {
@@ -88,7 +82,7 @@ export const ProgressBar = ({ value = 0, tone = 'navy', height = 5, label }) => 
   return (
     <div
       className="w-full overflow-hidden"
-      style={{ height, backgroundColor: 'rgba(20,33,61,0.12)', borderRadius: 'var(--radius-sm)' }}
+      style={{ height, backgroundColor: 'rgba(244,237,224,0.10)', borderRadius: '999px' }}
       role="progressbar"
       aria-valuenow={Math.round(safe)}
       aria-valuemin={0}
@@ -96,7 +90,9 @@ export const ProgressBar = ({ value = 0, tone = 'navy', height = 5, label }) => 
       aria-label={label || 'Progress'}
     >
       <div
-        className={`bar-fill h-full ${overflow ? 'bg-coral' : PROGRESS_TONE[tone] || PROGRESS_TONE.navy}`}
+        className={`bar-fill h-full rounded-full ${
+          overflow ? 'bg-coral shadow-[0_0_14px_rgba(255,107,91,0.55)]' : PROGRESS_TONE[tone] || PROGRESS_TONE.navy
+        }`}
         style={{ width: `${width}%` }}
       />
     </div>
@@ -104,17 +100,17 @@ export const ProgressBar = ({ value = 0, tone = 'navy', height = 5, label }) => 
 }
 
 const BADGE_TONE = {
-  neutral: 'border-ink/18 bg-ink/5 text-ink',
-  positive: 'border-ink/20 bg-cream-deep/80 text-ink',
-  warning: 'border-coral/60 bg-coral/12 text-coral',
-  soft: 'border-ink/20 bg-cream-deep/70 text-navy-soft',
+  neutral: 'border-cream/16 bg-white/5 text-cream/85',
+  positive: 'border-cream/22 bg-cream/10 text-cream',
+  warning: 'border-coral/50 bg-coral/14 text-coral',
+  soft: 'border-cream/16 bg-white/[0.06] text-cream/70',
   muted: 'border-transparent bg-transparent text-muted',
-  inverse: 'border-cream/40 bg-navy/8 text-cream',
+  inverse: 'border-cream/30 bg-white/10 text-cream',
 }
 
 export const Badge = ({ children, tone = 'neutral', className = '' }) => (
   <span
-    className={`inline-flex items-center gap-1 border px-1.5 py-0.5 font-mono text-[9.5px] font-medium uppercase tracking-[0.1em] ${
+    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9.5px] font-medium uppercase tracking-[0.07em] ${
       BADGE_TONE[tone] || BADGE_TONE.neutral
     } ${className}`}
   >
@@ -124,7 +120,7 @@ export const Badge = ({ children, tone = 'neutral', className = '' }) => (
 
 export const EmptyState = ({ icon = 'info', title, description, action }) => (
   <div className="flex flex-col items-start px-6 py-12">
-    <span className="mb-4 flex h-9 w-9 items-center justify-center border border-rule-strong bg-cream-soft text-ink/55">
+    <span className="mb-4 flex h-10 w-10 items-center justify-center rounded-full border border-rule-strong bg-white/5 text-cream/60">
       <Icon name={icon} className="h-4 w-4" />
     </span>
     <p className="display text-[19px] text-ink">{title}</p>
@@ -138,14 +134,14 @@ export const EmptyState = ({ icon = 'info', title, description, action }) => (
 export const InlineAlert = ({ tone = 'warning', children, onDismiss }) => {
   const styles =
     tone === 'positive'
-      ? 'border-ink/20 bg-cream-deep/70 text-ink'
+      ? 'border-cream/18 bg-cream/[0.07] text-cream'
       : tone === 'info'
-      ? 'border-rule-strong bg-cream-soft/90 text-ink'
-      : 'border-coral/60 bg-coral/14 text-coral'
+      ? 'border-rule-strong bg-white/[0.045] text-cream/80'
+      : 'border-coral/45 bg-coral/12 text-coral'
 
   return (
     <div
-      className={`reveal flex items-start gap-2.5 border px-3 py-2.5 text-[11.5px] leading-relaxed ${styles}`}
+      className={`reveal flex items-start gap-2.5 rounded-[var(--radius-sm)] border px-3.5 py-2.5 text-[11.5px] leading-relaxed backdrop-blur-xl ${styles}`}
     >
       <Icon
         name={tone === 'positive' ? 'check' : tone === 'info' ? 'info' : 'alert'}
@@ -187,14 +183,14 @@ export const Modal = ({ open, onClose, title, description, children, footer, wid
       <button
         type="button"
         aria-label="Close dialog"
-        className="scrim absolute inset-0 h-full w-full cursor-default bg-navy/60"
+        className="scrim absolute inset-0 h-full w-full cursor-default bg-navy-deep/80 backdrop-blur-sm"
         onClick={onClose}
       />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`dialog-panel relative w-full ${width} border border-rule-strong bg-surface p-5 shadow-[0_24px_60px_-24px_rgba(11,19,38,0.65)]`}
+        className={`dialog-panel relative w-full ${width} rounded-[24px] border border-cream/16 bg-[rgba(13,22,42,0.96)] p-5 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.95)] backdrop-blur-2xl`}
       >
         <div className="mb-3.5 flex items-start justify-between gap-4 border-b border-rule-strong pb-3">
           <div>

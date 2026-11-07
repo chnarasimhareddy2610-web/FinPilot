@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
 import {
   Badge,
-  Card,
   EmptyState,
   FieldError,
   InlineAlert,
@@ -116,99 +115,107 @@ export const GoalsPage = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-9 sm:space-y-11">
       {notice ? (
         <InlineAlert tone="positive" onDismiss={() => setNotice('')}>
           {notice}
         </InlineAlert>
       ) : null}
 
-      {/* Summary plate: figures on cream, ring as the single visual anchor. */}
-      <div className="panel reveal grid grid-cols-1 items-center gap-5 px-6 py-5 sm:grid-cols-12">
-        <div className="sm:col-span-8">
-          <p className="eyebrow text-[9px]">Total saved toward goals</p>
-          <p className="num mt-3 text-[28px] leading-none text-ink sm:text-[34px]">
+      {/* One ring for the whole portfolio; the goals below are read as milestones. */}
+      <section className="reveal grid items-center gap-8 lg:grid-cols-12">
+        <div className="lg:col-span-8">
+          <p className="eyebrow">Total saved toward goals</p>
+          <p className="num mt-3 text-[42px] leading-[0.88] text-white sm:text-[54px]">
             <span key={String(totals.saved)} className="metric-swap">
               {formatCurrency(totals.saved)}
             </span>
           </p>
-          <div className="mt-4 grid grid-cols-3 divide-x divide-rule-strong border-t border-rule-strong pt-3">
-            <div className="pr-3">
-              <p className="ledger-head">Combined target</p>
-              <p className="num mt-0.5 text-[12px] text-ink">{formatCurrency(totals.target)}</p>
+          <dl className="mt-5 flex flex-wrap items-baseline gap-x-8 gap-y-3 border-t border-rule pt-4">
+            <div>
+              <dt className="ledger-head">Combined target</dt>
+              <dd className="num mt-1 text-[13px] text-cream">{formatCurrency(totals.target)}</dd>
             </div>
-            <div className="px-3">
-              <p className="ledger-head">Active</p>
-              <p className="num mt-0.5 text-[12px] text-ink">{totals.active}</p>
+            <div>
+              <dt className="ledger-head">To go</dt>
+              <dd className="num mt-1 text-[13px] text-cream">
+                {formatCurrency(Math.max(0, totals.target - totals.saved))}
+              </dd>
             </div>
-            <div className="pl-3">
-              <p className="ledger-head">Completed</p>
-              <p className="num mt-0.5 text-[12px] text-ink">{totals.completed}</p>
+            <div>
+              <dt className="ledger-head">Active</dt>
+              <dd className="num mt-1 text-[13px] text-cream">{totals.active}</dd>
             </div>
-          </div>
+            <div>
+              <dt className="ledger-head">Completed</dt>
+              <dd className="num mt-1 text-[13px] text-cream">{totals.completed}</dd>
+            </div>
+          </dl>
         </div>
 
-        <div className="flex items-center justify-start gap-4 sm:col-span-4 sm:justify-end">
-          <ProgressRing progress={overallProgress} size={118} stroke={5}>
-            <p className="num text-[17px] leading-none text-ink">{formatPercent(overallProgress, 0)}</p>
-            <p className="mt-1 font-mono text-[8px] uppercase tracking-[0.14em] text-muted">funded</p>
+        <div className="flex items-center gap-5 lg:col-span-4 lg:justify-end">
+          <ProgressRing progress={overallProgress} size={124} stroke={4}>
+            <p className="num text-[19px] leading-none text-white">
+              {formatPercent(overallProgress, 0)}
+            </p>
+            <p className="mt-1.5 text-[9px] text-muted">funded</p>
           </ProgressRing>
-          <div className="text-left">
-            <p className="ledger-head">To go</p>
-            <p className="num mt-0.5 text-[12px] text-ink">
-              {formatCurrency(Math.max(0, totals.target - totals.saved))}
-            </p>
-            <p className="mt-2 max-w-[7rem] text-[10px] leading-snug text-muted">
-              Across every goal you have recorded.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-rule-strong pb-3">
-        <div>
-          <p className="eyebrow text-[9px]">Savings goals</p>
-          <p className="mt-1 text-[10.5px] text-muted">
-            Contributions are saved immediately and count toward the goal balance.
+          <p className="max-w-[9rem] text-[10.5px] leading-relaxed text-muted">
+            Share of every recorded goal target you have already funded.
           </p>
         </div>
-        <button type="button" onClick={() => setGoalModalOpen(true)} className="btn btn-primary">
-          <Icon name="plus" className="h-3.5 w-3.5" />
-          New goal
-        </button>
-      </div>
+      </section>
 
-      {orderedGoals.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon="goals"
-            title="No savings goals yet"
-            description="Give a goal a name, a target amount and a date, then add contributions as you save."
-            action={
-              <button type="button" onClick={() => setGoalModalOpen(true)} className="btn btn-primary">
-                <Icon name="plus" className="h-3.5 w-3.5" />
-                Create your first goal
-              </button>
-            }
-          />
-        </Card>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {orderedGoals.map((goal, index) => {
-            const pace = paceFor(goal)
-            const daysLeft = goal.targetDate ? daysUntil(goal.targetDate) : 0
+      <div className="border-t border-rule pt-7">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">Savings goals</h2>
+            <p className="mt-1 text-[11.5px] text-muted">
+              Contributions are saved immediately and count toward the goal balance.
+            </p>
+          </div>
+          <button type="button" onClick={() => setGoalModalOpen(true)} className="btn btn-primary">
+            <Icon name="plus" className="h-3.5 w-3.5" />
+            New goal
+          </button>
+        </div>
 
-            return (
-              <article
-                key={goal.id}
-                className="reveal flex flex-col border border-rule-strong bg-surface p-4"
-                style={{ '--i': index }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="ledger-head">Goal {String(index + 1).padStart(2, '0')}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2">
-                      <h3 className="display truncate text-[17px] text-ink">{goal.name}</h3>
+        {orderedGoals.length === 0 ? (
+          <div className="mt-4 border-y border-rule">
+            <EmptyState
+              icon="goals"
+              title="No savings goals yet"
+              description="Give a goal a name, a target amount and a date, then add contributions as you save."
+              action={
+                <button
+                  type="button"
+                  onClick={() => setGoalModalOpen(true)}
+                  className="btn btn-primary"
+                >
+                  <Icon name="plus" className="h-3.5 w-3.5" />
+                  Create your first goal
+                </button>
+              }
+            />
+          </div>
+        ) : (
+          <div className="mt-2">
+            {orderedGoals.map((goal, index) => {
+              const pace = paceFor(goal)
+              const daysLeft = goal.targetDate ? daysUntil(goal.targetDate) : 0
+
+              return (
+                <article
+                  key={goal.id}
+                  className="reveal group grid gap-x-8 gap-y-4 border-b border-rule/70 py-6 lg:grid-cols-12"
+                  style={{ '--i': index }}
+                >
+                  {/* Identity and deadline */}
+                  <div className="min-w-0 lg:col-span-4">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <h3 className="display truncate text-[19px] leading-tight text-white">
+                        {goal.name}
+                      </h3>
                       {goal.isComplete ? (
                         <Badge tone="positive">Completed</Badge>
                       ) : pace.behind ? (
@@ -217,82 +224,101 @@ export const GoalsPage = () => {
                         <Badge tone="soft">On track</Badge>
                       )}
                     </div>
-                    <p className="mt-1.5 font-mono text-[9.5px] uppercase tracking-[0.06em] text-muted">
+                    <p className="mt-1.5 text-[10.5px] text-muted">
                       Target {formatDate(goal.targetDate)}
                       {!goal.isComplete && goal.targetDate ? (
-                        <> · {daysLeft >= 0 ? `${daysLeft} days left` : `${Math.abs(daysLeft)} days overdue`}</>
+                        <>
+                          {' '}
+                          · {daysLeft >= 0 ? `${daysLeft} days left` : `${Math.abs(daysLeft)} days overdue`}
+                        </>
                       ) : null}
                     </p>
+                    <p className="mt-3 text-[10.5px] text-muted">
+                      {(goal.contributions || []).length} contribution
+                      {(goal.contributions || []).length === 1 ? '' : 's'} recorded
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setDeleteTarget(goal)}
-                    aria-label={`Delete ${goal.name}`}
-                    className="p-1 text-muted transition-colors hover:text-coral"
-                  >
-                    <Icon name="trash" className="h-3.5 w-3.5" />
-                  </button>
-                </div>
 
-                <div className="mt-4 flex items-center gap-4">
-                  <ProgressRing progress={goal.progress} size={86} stroke={5}>
-                    <p className="num text-[12.5px] leading-none text-ink">{formatPercent(goal.progress, 0)}</p>
-                    <p className="mt-1 font-mono text-[7.5px] uppercase tracking-[0.12em] text-muted">funded</p>
-                  </ProgressRing>
+                  {/* Money hierarchy: saved dominates, target and remaining sit under it */}
+                  <div className="min-w-0 lg:col-span-5">
+                    <div className="flex flex-wrap items-baseline gap-x-2.5">
+                      <p className="num text-[24px] leading-none text-white">
+                        {formatCurrency(goal.currentAmount)}
+                      </p>
+                      <p className="num text-[11.5px] text-muted">
+                        of {formatCurrency(goal.targetAmount)}
+                      </p>
+                    </div>
 
-                  <div className="min-w-0 flex-1">
-                    <p className="num text-[19px] leading-none text-ink">{formatCurrency(goal.currentAmount)}</p>
-                    <p className="mt-1 text-[10.5px] text-muted">of {formatCurrency(goal.targetAmount)}</p>
-                    <div className="mt-2.5">
+                    <div className="mt-3">
                       <ProgressBar
                         value={goal.progress}
                         tone={goal.isComplete ? 'navy' : pace.behind ? 'coral' : 'soft'}
-                        height={4}
+                        height={3}
                         label={`${goal.name} progress`}
                       />
                     </div>
-                    <p className="num mt-1.5 text-[10px] text-muted">
-                      {formatCurrency(goal.remaining)} remaining
-                    </p>
-                  </div>
-                </div>
 
-                <div className="mt-3 grid grid-cols-2 divide-x divide-rule border-t border-rule pt-2.5">
-                  <div className="pr-3">
-                    <p className="ledger-head">Needed monthly</p>
-                    <p className="num mt-0.5 text-[11px] font-medium text-ink">
-                      {goal.isComplete ? '—' : formatCurrency(pace.requiredMonthly)}
-                    </p>
+                    <div className="mt-2 flex items-baseline justify-between gap-3 text-[10.5px]">
+                      <span className="num text-muted">{formatPercent(goal.progress, 0)} funded</span>
+                      <span
+                        className={`num ${goal.isComplete ? 'text-cream/60' : 'text-cream/85'}`}
+                      >
+                        {goal.isComplete
+                          ? 'Target reached'
+                          : `${formatCurrency(goal.remaining)} remaining`}
+                      </span>
+                    </div>
                   </div>
-                  <div className="pl-3">
-                    <p className="ledger-head">Recent pace</p>
-                    <p className={`num mt-0.5 text-[11px] font-medium ${pace.behind ? 'text-coral' : 'text-ink'}`}>
-                      {formatCurrency(pace.recentMonthly)}
-                      <span className="ml-1 font-sans text-[9.5px] font-normal text-muted">/mo</span>
-                    </p>
-                  </div>
-                </div>
 
-                <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">
-                    {(goal.contributions || []).length} contribution
-                    {(goal.contributions || []).length === 1 ? '' : 's'}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => openContribution(goal)}
-                    disabled={goal.isComplete}
-                    className="btn btn-ink px-3 py-1.5 text-[10.5px]"
-                  >
-                    <Icon name="plus" className="h-3 w-3" />
-                    Add contribution
-                  </button>
-                </div>
-              </article>
-            )
-          })}
-        </div>
-      )}
+                  {/* Pace and the single action */}
+                  <div className="flex flex-col justify-between gap-3 lg:col-span-3 lg:items-end">
+                    <dl className="flex gap-6 lg:gap-8">
+                      <div>
+                        <dt className="ledger-head">Needed monthly</dt>
+                        <dd className="num mt-1 text-[12px] font-medium text-cream/90">
+                          {goal.isComplete ? '—' : formatCurrency(pace.requiredMonthly)}
+                        </dd>
+                      </div>
+                      <div className="lg:text-right">
+                        <dt className="ledger-head">Recent pace</dt>
+                        <dd
+                          className={`num mt-1 text-[12px] font-medium ${
+                            pace.behind ? 'text-coral' : 'text-cream/90'
+                          }`}
+                        >
+                          {formatCurrency(pace.recentMonthly)}
+                          <span className="ml-0.5 text-[9.5px] font-normal text-muted">/mo</span>
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openContribution(goal)}
+                        disabled={goal.isComplete}
+                        className="btn btn-ink px-3 py-1.5 text-[10.5px]"
+                      >
+                        <Icon name="plus" className="h-3 w-3" />
+                        Add contribution
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteTarget(goal)}
+                        aria-label={`Delete ${goal.name}`}
+                        className="rounded-md p-1.5 text-muted transition-colors hover:bg-coral/10 hover:text-coral"
+                      >
+                        <Icon name="trash" className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       <Modal
         open={goalModalOpen}
@@ -373,7 +399,8 @@ export const GoalsPage = () => {
 
           <div>
             <label className="field-label" htmlFor="goal-initial">
-              Starting amount (₹) <span className="font-normal normal-case tracking-normal">optional</span>
+              Starting amount (₹){' '}
+              <span className="font-normal normal-case tracking-normal">optional</span>
             </label>
             <input
               id="goal-initial"
@@ -401,7 +428,11 @@ export const GoalsPage = () => {
         }
         footer={
           <>
-            <button type="button" onClick={() => setContributionGoal(null)} className="btn btn-ghost">
+            <button
+              type="button"
+              onClick={() => setContributionGoal(null)}
+              className="btn btn-ghost"
+            >
               Cancel
             </button>
             <button type="submit" form="contribution-form" className="btn btn-primary">
@@ -410,7 +441,12 @@ export const GoalsPage = () => {
           </>
         }
       >
-        <form id="contribution-form" onSubmit={handleContribution} className="space-y-3.5" noValidate>
+        <form
+          id="contribution-form"
+          onSubmit={handleContribution}
+          className="space-y-3.5"
+          noValidate
+        >
           <div>
             <label className="field-label" htmlFor="contribution-amount">
               Amount (₹)
@@ -464,10 +500,11 @@ export const GoalsPage = () => {
         }
       >
         {deleteTarget ? (
-          <div className="border border-ink/18 bg-cream/60 px-3 py-2">
-            <p className="text-[12px] font-medium text-ink">{deleteTarget.name}</p>
-            <p className="num mt-0.5 text-[10.5px] text-muted">
-              {formatCurrency(deleteTarget.currentAmount)} saved of {formatCurrency(deleteTarget.targetAmount)}
+          <div className="border-l border-coral/50 pl-4">
+            <p className="text-[13px] font-medium text-ink">{deleteTarget.name}</p>
+            <p className="num mt-1 text-[11px] text-muted">
+              {formatCurrency(deleteTarget.currentAmount)} saved of{' '}
+              {formatCurrency(deleteTarget.targetAmount)}
             </p>
           </div>
         ) : null}

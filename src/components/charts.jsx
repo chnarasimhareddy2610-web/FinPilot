@@ -1,23 +1,23 @@
 import React from 'react'
 
 /**
- * Chart palette. Every series lives inside the four-colour system: navy for the
- * ground and primary lines, cream for nodes and contrast, coral for the single
- * accent, and navy-tinted greys for muted context. No colour outside the system.
+ * Chart palette. Every series sits on the dark canvas using only the four
+ * approved colours: cream and white for series that must read strongly, coral
+ * for the accent, and cream/coral at reduced alpha for the quieter slices.
  */
 export const CATEGORY_COLORS = [
   '#F4EDE0',
-  'rgba(20, 33, 61, 0.16)',
   '#FF6B5B',
-  'rgba(20, 33, 61, 0.55)',
-  'rgba(20, 33, 61, 0.85)',
+  'rgba(244, 237, 224, 0.62)',
+  'rgba(255, 107, 91, 0.58)',
+  'rgba(244, 237, 224, 0.32)',
 ]
 
 export const categoryColor = (index) => CATEGORY_COLORS[index % CATEGORY_COLORS.length]
 
-const TRACK = '#F4EDE0'
-const GRID = 'rgba(20,33,61,0.12)',
-  GRID_STRONG = 'rgba(20,33,61,0.18)'
+const TRACK = 'rgba(244, 237, 224, 0.10)'
+const GRID = 'rgba(244,237,224,0.09)',
+  GRID_STRONG = 'rgba(244,237,224,0.17)'
 
 /** Donut built from stroked circles with pathLength=100, so segments are exact. */
 export const DonutChart = ({ data = [], total, centerLabel, centerValue, size = 176, thickness = 12 }) => {
@@ -102,13 +102,13 @@ export const GroupedBars = ({ data = [], height = 172, formatValue = (v) => v })
           return (
             <div key={item.month} className="flex h-full flex-1 items-end justify-center gap-1.5 sm:gap-2">
               <div
-                className="bar-column w-2.5 sm:w-3.5 bg-navy"
-                style={{ height: `${incomeHeight}%`, '--i': index, opacity: isCurrent ? 1 : 0.85 }}
+                className="bar-column w-3 rounded-t-[3px] bg-cream sm:w-4"
+                style={{ height: `${incomeHeight}%`, '--i': index, opacity: isCurrent ? 1 : 0.8 }}
                 title={`${item.label} income: ${formatValue(item.income)}`}
               />
               <div
-                className="bar-column w-2.5 sm:w-3.5 bg-coral"
-                style={{ height: `${expenseHeight}%`, '--i': index, opacity: isCurrent ? 1 : 0.78 }}
+                className="bar-column w-3 rounded-t-[3px] bg-coral sm:w-4"
+                style={{ height: `${expenseHeight}%`, '--i': index, opacity: isCurrent ? 1 : 0.72 }}
                 title={`${item.label} expenses: ${formatValue(item.expenses)}`}
               />
             </div>
@@ -161,21 +161,22 @@ export const LineTrend = ({ data = [], formatValue = (v) => v, height = 180, fil
 
   return (
     <div>
-      <div className="relative" style={{ height }}>
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible" role="img" aria-label="Monthly net savings trend">
+      <div className="flex gap-3" style={{ height }}>
+        <div className="relative h-full flex-1">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full" role="img" aria-label="Monthly net savings trend">
           {[0.25, 0.5, 0.75].map((fraction) => (
             <line key={fraction} x1="0" x2="100" y1={pad + inner * fraction} y2={pad + inner * fraction} stroke={GRID} strokeWidth="0.4" vectorEffect="non-scaling-stroke" />
           ))}
 
           <line x1="0" x2="100" y1={zeroY} y2={zeroY} stroke={GRID_STRONG} strokeWidth="0.6" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />
 
-          {fill ? <path d={area} fill="rgba(20,33,61,0.08)" /> : null}
+          {fill ? <path d={area} fill="rgba(244,237,224,0.055)" /> : null}
 
           <path
             d={line}
             fill="none"
-            stroke="#14213D"
-            strokeWidth="1.7"
+            stroke="#F4EDE0"
+            strokeWidth="1.6"
             strokeLinejoin="round"
             strokeLinecap="round"
             pathLength="1000"
@@ -183,30 +184,26 @@ export const LineTrend = ({ data = [], formatValue = (v) => v, height = 180, fil
             className="draw-line"
             style={{ '--len': 1000, '--offset': 0 }}
           />
-
-          {points.map((point) => (
-            <circle
-              key={point.label}
-              cx={point.x}
-              cy={point.y}
-              r="1.5"
-              fill="#F4EDE0"
-              stroke="#14213D"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
-            >
-              <title>{`${point.label}: ${formatValue(point.value)}`}</title>
-            </circle>
-          ))}
         </svg>
 
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex flex-col justify-between py-1 text-right">
+        {/* Markers live outside the stretched SVG so they stay perfectly round. */}
+        {points.map((point) => (
+          <span
+            key={point.label}
+            className="absolute h-[5px] w-[5px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-coral"
+            style={{ left: `${point.x}%`, top: `${point.y}%` }}
+            title={`${point.label}: ${formatValue(point.value)}`}
+          />
+        ))}
+        </div>
+
+        <div className="pointer-events-none flex w-10 flex-col justify-between py-1 text-right">
           <span className="num text-[10px] text-muted">{formatValue(max)}</span>
           {min < 0 ? <span className="num text-[10px] text-muted">{formatValue(min)}</span> : null}
         </div>
       </div>
 
-      <div className="mt-2 flex border-t border-rule">
+      <div className="mt-2 flex border-t border-rule pr-[3.25rem]">
         {data.map((item, index) => (
           <div
             key={item.month}
@@ -236,7 +233,7 @@ export const ProgressRing = ({ progress = 0, size = 108, stroke = 5, children })
           cy="50"
           r={radius}
           fill="none"
-          stroke="#14213D"
+          stroke="#FF6B5B"
           strokeWidth={stroke}
           pathLength="100"
           strokeDasharray="100"
@@ -255,7 +252,7 @@ export const Legend = ({ items = [] }) => (
     {items.map((item) => (
       <li key={item.label} className="flex items-center justify-between gap-3 text-[11.5px]">
         <span className="flex min-w-0 items-center gap-2">
-          <span className="h-2 w-2 shrink-0" style={{ backgroundColor: item.color }} />
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
           <span className="truncate text-ink">{item.label}</span>
         </span>
         <span className="num shrink-0 text-muted">

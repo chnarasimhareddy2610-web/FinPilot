@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
-import { Badge, Card, EmptyState, FieldError, InlineAlert, Modal } from '../components/ui.jsx'
+import { EmptyState, FieldError, InlineAlert, Modal } from '../components/ui.jsx'
 import { useFinance } from '../store/FinanceProvider.jsx'
 import {
   CATEGORIES,
@@ -161,64 +161,37 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
   const categoryOptions = form.type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {notice ? (
         <InlineAlert tone="positive" onDismiss={() => setNotice('')}>
           {notice}
         </InlineAlert>
-      ) : null}          <Card className="p-4">
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div className="relative flex-1">
-              <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink/40" />
-              <input
-                type="search"
-                value={filters.search}
-                onChange={(event) => setFilters({ ...filters, search: event.target.value })}
-                placeholder="Search description, category or notes"
-                aria-label="Search transactions"
-                className="field pl-8"
-              />
-            </div>
+      ) : null}
 
-            <div className="flex items-center gap-2">
-              <label className="sr-only" htmlFor="sort-transactions">
-                Sort transactions
-              </label>
-              <select
-                id="sort-transactions"
-                value={sort}
-                onChange={(event) => setSort(event.target.value)}
-                className="field font-mono text-[10.5px]"
-              >
-                <option value="date-desc">Newest first</option>
-                <option value="date-asc">Oldest first</option>
-                <option value="amount-desc">Highest amount</option>
-                <option value="amount-asc">Lowest amount</option>
-                <option value="description-asc">Description A–Z</option>
-              </select>
-              {filtersActive ? (
-                <button
-                  type="button"
-                  onClick={() => setFilters(CLEAR_FILTERS)}
-                  className="btn btn-ghost whitespace-nowrap"
-                >
-                  Clear
-                </button>
-              ) : null}
-              <button type="button" onClick={openCreate} className="btn btn-primary whitespace-nowrap">
-                <Icon name="plus" className="h-3.5 w-3.5" />
-                Add
-              </button>
-            </div>
+      {/* One toolbar: search, filters, sort and the primary action share a single strip. */}
+      <section className="border-y border-rule py-2">
+        <div className="flex flex-col gap-2 xl:flex-row xl:items-center xl:gap-3">
+          <div className="relative flex-1 xl:max-w-[240px]">
+            <Icon
+              name="search"
+              className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink/40"
+            />
+            <input
+              type="search"
+              value={filters.search}
+              onChange={(event) => setFilters({ ...filters, search: event.target.value })}
+              placeholder="Search transactions"
+              aria-label="Search transactions"
+              className="field border-transparent bg-transparent pl-8 text-[12px] hover:border-rule"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-2 border-t border-rule pt-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 xl:flex xl:flex-1 xl:items-center xl:gap-1.5">
             <select
               value={filters.type}
               onChange={(event) => setFilters({ ...filters, type: event.target.value })}
               aria-label="Filter by type"
-              className="field font-mono text-[10.5px]"
+              className="field border-transparent bg-transparent text-[11.5px] hover:border-rule xl:w-[104px]"
             >
               <option value="">All types</option>
               <option value="income">Income</option>
@@ -229,7 +202,7 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
               value={filters.category}
               onChange={(event) => setFilters({ ...filters, category: event.target.value })}
               aria-label="Filter by category"
-              className="field font-mono text-[10.5px]"
+              className="field border-transparent bg-transparent text-[11.5px] hover:border-rule xl:w-[124px]"
             >
               <option value="">All categories</option>
               {CATEGORIES.map((category) => (
@@ -239,37 +212,80 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
               ))}
             </select>
 
-            <input
-              type="date"
-              value={filters.from}
-              onChange={(event) => setFilters({ ...filters, from: event.target.value })}
-              aria-label="From date"
-              className="field font-mono text-[10.5px]"
-            />
-            <input
-              type="date"
-              value={filters.to}
-              onChange={(event) => setFilters({ ...filters, to: event.target.value })}
-              aria-label="To date"
-              className="field font-mono text-[10.5px]"
-            />
+            <div className="flex items-center gap-1.5 xl:w-[152px]">
+              <span className="shrink-0 text-[9.5px] uppercase tracking-[0.08em] text-muted">
+                From
+              </span>
+              <input
+                type="date"
+                value={filters.from}
+                onChange={(event) => setFilters({ ...filters, from: event.target.value })}
+                aria-label="From date"
+                className="field min-w-0 border-transparent bg-transparent text-[11.5px] hover:border-rule"
+              />
+            </div>
+            <div className="flex items-center gap-1.5 xl:w-[152px]">
+              <span className="shrink-0 text-[9.5px] uppercase tracking-[0.08em] text-muted">
+                To
+              </span>
+              <input
+                type="date"
+                value={filters.to}
+                onChange={(event) => setFilters({ ...filters, to: event.target.value })}
+                aria-label="To date"
+                className="field min-w-0 border-transparent bg-transparent text-[11.5px] hover:border-rule"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <label className="sr-only" htmlFor="sort-transactions">
+              Sort transactions
+            </label>
+            <select
+              id="sort-transactions"
+              value={sort}
+              onChange={(event) => setSort(event.target.value)}
+              className="field border-transparent bg-transparent text-[11.5px] hover:border-rule xl:w-[132px]"
+            >
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="amount-desc">Highest amount</option>
+              <option value="amount-asc">Lowest amount</option>
+              <option value="description-asc">Description A–Z</option>
+            </select>
+            {filtersActive ? (
+              <button
+                type="button"
+                onClick={() => setFilters(CLEAR_FILTERS)}
+                className="px-2 text-[11.5px] text-muted transition-colors hover:text-cream"
+              >
+                Clear
+              </button>
+            ) : null}
+            <button type="button" onClick={openCreate} className="btn btn-primary whitespace-nowrap">
+              <Icon name="plus" className="h-3.5 w-3.5" />
+              Add
+            </button>
           </div>
         </div>
-      </Card>
+      </section>
 
-      <Card className="overflow-hidden">
-        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-rule-strong px-5 py-3">
-          <p className="text-[11px] text-muted">
+      <section>
+        <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1 border-b border-rule py-3">
+          <p className="text-[11.5px] text-muted">
             <span className="num font-medium text-ink">{visible.length}</span> of{' '}
             {monthTransactions.length} transaction{monthTransactions.length === 1 ? '' : 's'}
             {filtersActive ? ' matching filters' : ' this month'}
           </p>
-          <div className="flex items-center gap-4 font-mono text-[9.5px] uppercase tracking-[0.12em]">
+          <div className="flex items-center gap-5 text-[11px]">
             <span className="text-muted">
-              In <span className="num ml-1 text-[11px] font-medium normal-case tracking-normal text-navy">{formatCurrency(totals.income)}</span>
+              In{' '}
+              <span className="num ml-1 font-medium text-white">{formatCurrency(totals.income)}</span>
             </span>
             <span className="text-muted">
-              Out <span className="num ml-1 text-[11px] font-medium normal-case tracking-normal text-coral">{formatCurrency(totals.expense)}</span>
+              Out{' '}
+              <span className="num ml-1 font-medium text-coral">{formatCurrency(totals.expense)}</span>
             </span>
           </div>
         </div>
@@ -305,50 +321,62 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
           <>
             {/* Desktop ledger */}
             <div className="hidden overflow-x-auto md:block">
-              <table className="w-full">
+              <table className="w-full border-collapse">
                 <thead>
-                  <tr className="border-b border-rule-strong bg-cream-soft/70 text-left">
-                    <th className="ledger-head px-5 py-2.5 font-medium ledger-head-ink">Date</th>
-                    <th className="ledger-head px-3 py-2.5 font-medium ledger-head-ink">Description</th>
-                    <th className="ledger-head px-3 py-2.5 font-medium ledger-head-ink">Category</th>
-                    <th className="ledger-head px-3 py-2.5 font-medium ledger-head-ink">Type</th>
-                    <th className="ledger-head px-3 py-2.5 text-right font-medium ledger-head-ink">Amount</th>
-                    <th className="ledger-head px-5 py-2.5 text-right font-medium ledger-head-ink">Actions</th>
+                  <tr className="text-left">
+                    <th className="ledger-head w-[92px] py-3 pr-3 font-medium">Date</th>
+                    <th className="ledger-head py-3 pr-3 font-medium">Description</th>
+                    <th className="ledger-head w-[150px] py-3 pr-3 font-medium">Category</th>
+                    <th className="ledger-head w-[92px] py-3 pr-3 font-medium">Type</th>
+                    <th className="ledger-head w-[120px] py-3 pr-3 text-right font-medium">Amount</th>
+                    <th className="w-[68px] py-3 text-right font-medium">
+                      <span className="sr-only">Actions</span>
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-rule">
+                <tbody className="divide-y divide-rule/70">
                   {visible.map((transaction) => (
-                    <tr key={transaction.id} className="ledger-row">
-                      <td className="whitespace-nowrap px-5 py-3 font-mono text-[10.5px] text-muted">
+                    <tr key={transaction.id} className="ledger-row group">
+                      <td className="num whitespace-nowrap py-3.5 pr-3 text-[11px] text-muted">
                         {formatDate(transaction.date, { short: true })}
                       </td>
-                      <td className="px-3 py-3">
-                        <p className="text-[12.5px] font-medium text-ink">{transaction.description}</p>
+                      <td className="py-3.5 pr-3">
+                        <p className="text-[13px] font-medium text-ink">
+                          {transaction.description}
+                        </p>
                         {transaction.notes ? (
-                          <p className="mt-0.5 line-clamp-1 text-[10.5px] text-muted">{transaction.notes}</p>
+                          <p className="mt-0.5 line-clamp-1 text-[10.5px] text-muted">
+                            {transaction.notes}
+                          </p>
                         ) : null}
                       </td>
-                      <td className="px-3 py-3 text-[11px] text-muted">{transaction.category}</td>
-                      <td className="px-3 py-3">
-                        <Badge tone={transaction.type === 'income' ? 'positive' : 'warning'}>
+                      <td className="py-3.5 pr-3 text-[11.5px] text-muted">{transaction.category}</td>
+                      <td className="py-3.5 pr-3">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted">
+                          <span
+                            className={`h-1 w-1 rounded-full ${
+                              transaction.type === 'income' ? 'bg-cream/70' : 'bg-coral/80'
+                            }`}
+                            aria-hidden="true"
+                          />
                           {TYPE_LABEL[transaction.type]}
-                        </Badge>
+                        </span>
                       </td>
                       <td
-                        className={`num whitespace-nowrap px-3 py-3 text-right text-[12.5px] font-medium ${
-                          transaction.type === 'income' ? 'text-navy' : 'text-ink'
+                        className={`num whitespace-nowrap py-3.5 pr-3 text-right text-[13px] font-medium ${
+                          transaction.type === 'income' ? 'text-white' : 'text-cream/85'
                         }`}
                       >
                         {transaction.type === 'income' ? '+' : '−'}
                         {formatCurrency(transaction.amount)}
                       </td>
-                      <td className="px-5 py-3">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-3.5">
+                        <div className="flex items-center justify-end gap-0.5 opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover:opacity-100">
                           <button
                             type="button"
                             onClick={() => openEdit(transaction)}
                             aria-label={`Edit ${transaction.description}`}
-                            className="p-1 text-muted transition-colors hover:text-navy"
+                            className="rounded-md p-1.5 text-muted transition-colors hover:bg-white/[0.06] hover:text-cream focus-visible:opacity-100"
                           >
                             <Icon name="edit" className="h-3.5 w-3.5" />
                           </button>
@@ -356,7 +384,7 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
                             type="button"
                             onClick={() => setDeleteTarget(transaction)}
                             aria-label={`Delete ${transaction.description}`}
-                            className="p-1 text-muted transition-colors hover:text-coral"
+                            className="rounded-md p-1.5 text-muted transition-colors hover:bg-coral/10 hover:text-coral"
                           >
                             <Icon name="trash" className="h-3.5 w-3.5" />
                           </button>
@@ -369,22 +397,26 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
             </div>
 
             {/* Mobile list */}
-            <ul className="divide-y divide-rule md:hidden">
+            <ul className="divide-y divide-rule/70 md:hidden">
               {visible.map((transaction) => (
-                <li key={transaction.id} className="px-4 py-3">
+                <li key={transaction.id} className="py-3.5">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-[12.5px] font-medium text-ink">{transaction.description}</p>
-                      <p className="mt-0.5 font-mono text-[9.5px] uppercase tracking-[0.06em] text-muted">
+                      <p className="truncate text-[13px] font-medium text-ink">
+                        {transaction.description}
+                      </p>
+                      <p className="mt-0.5 text-[10.5px] text-muted">
                         {transaction.category} · {formatDate(transaction.date, { short: true })}
                       </p>
                       {transaction.notes ? (
-                        <p className="mt-0.5 line-clamp-1 text-[10.5px] text-muted">{transaction.notes}</p>
+                        <p className="mt-0.5 line-clamp-1 text-[10.5px] text-muted">
+                          {transaction.notes}
+                        </p>
                       ) : null}
                     </div>
                     <p
-                      className={`num shrink-0 text-[12.5px] font-medium ${
-                        transaction.type === 'income' ? 'text-navy' : 'text-ink'
+                      className={`num shrink-0 text-[13px] font-medium ${
+                        transaction.type === 'income' ? 'text-white' : 'text-cream/85'
                       }`}
                     >
                       {transaction.type === 'income' ? '+' : '−'}
@@ -392,17 +424,27 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
                     </p>
                   </div>
                   <div className="mt-2 flex items-center justify-between">
-                    <Badge tone={transaction.type === 'income' ? 'positive' : 'warning'}>
+                    <span className="inline-flex items-center gap-1.5 text-[10.5px] text-muted">
+                      <span
+                        className={`h-1 w-1 rounded-full ${
+                          transaction.type === 'income' ? 'bg-cream/70' : 'bg-coral/80'
+                        }`}
+                        aria-hidden="true"
+                      />
                       {TYPE_LABEL[transaction.type]}
-                    </Badge>
-                    <div className="flex gap-1">
-                      <button type="button" onClick={() => openEdit(transaction)} className="btn btn-ghost px-2 py-1 text-[10.5px]">
+                    </span>
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => openEdit(transaction)}
+                        className="text-[11px] text-cream/70 transition-colors hover:text-cream"
+                      >
                         Edit
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeleteTarget(transaction)}
-                        className="btn btn-ghost px-2 py-1 text-[10.5px] text-coral"
+                        className="text-[11px] text-coral/80 transition-colors hover:text-coral"
                       >
                         Delete
                       </button>
@@ -413,7 +455,7 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
             </ul>
           </>
         )}
-      </Card>
+      </section>
 
       <Modal
         open={formOpen}
@@ -496,10 +538,10 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
                     type="button"
                     onClick={() => handleTypeChange(type)}
                     aria-pressed={selected}
-                    className={`border px-3 py-2 text-[11.5px] font-medium transition-colors ${
+                    className={`rounded-full border px-3 py-2 text-[11.5px] font-medium transition-all ${
                       selected
-                        ? 'border-navy bg-navy text-cream'
-                        : 'border-rule-strong bg-surface text-muted hover:border-ink/35 hover:text-ink'
+                        ? 'border-coral/45 bg-coral/15 text-white shadow-[0_0_0_1px_rgba(255,107,91,0.15)]'
+                        : 'border-rule-strong bg-white/[0.03] text-cream/55 hover:border-cream/30 hover:text-cream'
                     }`}
                   >
                     {TYPE_LABEL[type]}
@@ -539,7 +581,7 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
                   setCategoryTouched(true)
                   updateField('category', suggestion.category)
                 }}
-                className="mt-2 flex w-full items-start gap-2 border-l-2 border-coral bg-cream-soft/95 px-2.5 py-2 text-left text-[10.5px] transition-colors hover:bg-cream-deep/70"
+                className="mt-2 flex w-full items-start gap-2 rounded-r-[12px] border-l-2 border-coral bg-coral/[0.09] px-3 py-2 text-left text-[10.5px] transition-colors hover:bg-coral/15"
               >
                 <Icon name="spark" className="mt-0.5 h-3 w-3 shrink-0 text-coral" />
                 <span>
@@ -584,10 +626,11 @@ export const TransactionsPage = ({ month, openFormSignal = 0 }) => {
         }
       >
         {deleteTarget ? (
-          <div className="border border-ink/15 bg-cream/60 px-3 py-2.5">
+          <div className="border-l border-coral/50 pl-4">
             <p className="text-[13px] font-medium text-ink">{deleteTarget.description}</p>
-            <p className="num mt-0.5 text-[11.5px] text-muted">
-              {formatCurrency(deleteTarget.amount)} · {deleteTarget.category} · {formatDate(deleteTarget.date)}
+            <p className="num mt-1 text-[11.5px] text-muted">
+              {formatCurrency(deleteTarget.amount)} · {deleteTarget.category} ·{' '}
+              {formatDate(deleteTarget.date)}
             </p>
           </div>
         ) : null}

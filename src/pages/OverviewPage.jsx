@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import Icon from '../components/Icon.jsx'
-import { Badge, Card, EmptyState, ProgressBar, SectionCard } from '../components/ui.jsx'
+import { Badge, Card, EmptyState, ProgressBar } from '../components/ui.jsx'
 import { DonutChart, Legend, categoryColor } from '../components/charts.jsx'
 import { useFinance } from '../store/FinanceProvider.jsx'
 import {
@@ -79,7 +79,6 @@ export const OverviewPage = ({ month, onNavigate, onAddTransaction }) => {
     return entries
   }, [spending])
 
-  const savingsTone = summary.savingsRate >= 20 ? 'positive' : summary.netSavings < 0 ? 'warning' : 'soft'
   const budgetRows = budgetSummary.list.filter((row) => row.actual > 0).slice(0, 4)
 
   if (transactions.length === 0) {
@@ -100,200 +99,227 @@ export const OverviewPage = ({ month, onNavigate, onAddTransaction }) => {
     )
   }
 
+  const summaryFigures = [
+    {
+      label: 'Income',
+      value: formatCurrency(summary.totalIncome),
+      hint: `${summary.transactionCount.income} credit${summary.transactionCount.income === 1 ? '' : 's'} this month`,
+      tone: 'text-white',
+    },
+    {
+      label: 'Expenses',
+      value: formatCurrency(summary.totalExpenses),
+      hint: `${summary.transactionCount.expense} outgo${summary.transactionCount.expense === 1 ? 'ing' : 'ings'} this month`,
+      tone: 'text-cream/90',
+    },
+    {
+      label: 'Net savings',
+      value: formatCurrency(summary.netSavings),
+      hint: summary.netSavings >= 0 ? 'Surplus for the month' : 'Deficit for the month',
+      tone: summary.netSavings >= 0 ? 'text-white' : 'text-coral',
+    },
+    {
+      label: 'Savings rate',
+      value: formatPercent(summary.savingsRate),
+      hint: 'Share of income kept',
+      tone: 'text-cream/90',
+    },
+  ]
+
   return (
-    <div className="space-y-6">
-      {/* Editorial lead row: one dark balance plate beside a spare figure grid. */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <div className="reveal relative overflow-hidden plate-navy px-6 py-5 lg:col-span-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="font-mono text-[8.5px] uppercase tracking-[0.2em] text-cream/45">
-                01 — Total balance
-              </p>
-              <p className="num mt-3 text-[30px] leading-none text-white sm:text-[36px]">
+    <div className="space-y-9 sm:space-y-11">
+      {/* The balance is the page: no container, generous space, one accent mark. */}
+      <section className="reveal">
+        <div className="flex flex-wrap items-end justify-between gap-x-10 gap-y-5">
+          <div>
+            <p className="eyebrow">Total balance</p>
+            <p className="num mt-3 text-[44px] leading-[0.86] text-white sm:text-[62px]">
+              <span key={String(balance)} className="metric-swap">
                 {formatCurrency(balance)}
-              </p>
-            </div>
-            <Icon name="wallet" className="h-4.5 w-4.5 text-coral" />
+              </span>
+            </p>
           </div>
-
-          <div className="mt-5 grid grid-cols-2 divide-x divide-cream/18 border-t border-cream/18 pt-4">
-            <div className="pr-4">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-cream/50">Entries recorded</p>
-              <p className="num mt-1 text-[15px] text-cream">{transactions.length}</p>
+          <dl className="flex items-center gap-6 pb-1">
+            <div>
+              <dt className="ledger-head">Entries</dt>
+              <dd className="num mt-1.5 text-[13px] text-cream">{transactions.length}</dd>
             </div>
-            <div className="pl-4">
-              <p className="text-[10px] uppercase tracking-[0.12em] text-cream/50">This month&apos;s net</p>
-              <p className="num mt-1 text-[15px] text-cream">{formatCurrency(summary.netSavings)}</p>
+            <div className="h-9 w-px bg-rule" aria-hidden="true" />
+            <div>
+              <dt className="ledger-head">This month</dt>
+              <dd
+                className={`num mt-1.5 text-[13px] ${
+                  summary.netSavings >= 0 ? 'text-cream' : 'text-coral'
+                }`}
+              >
+                {formatCurrency(summary.netSavings)}
+              </dd>
             </div>
-          </div>
-
-          <p className="mt-4 text-[10px] leading-relaxed text-cream/40">
-            Income minus expenses across every recorded month. Nothing leaves this browser.
-          </p>
+          </dl>
         </div>
+        <p className="mt-4 max-w-md text-[11.5px] leading-relaxed text-muted">
+          Income minus expenses across every recorded month. Nothing leaves this browser.
+        </p>
+      </section>
 
-        <div className="grid grid-cols-2 border border-rule-strong bg-surface lg:col-span-7">
-          {[
-            {
-              label: 'Income this month',
-              value: formatCurrency(summary.totalIncome),
-              hint: `${summary.transactionCount.income} credit${summary.transactionCount.income === 1 ? '' : 's'}`,
-              icon: 'arrowDown',
-            },
-            {
-              label: 'Expenses this month',
-              value: formatCurrency(summary.totalExpenses),
-              hint: `${summary.transactionCount.expense} outgo${summary.transactionCount.expense === 1 ? 'ing' : 'ings'}`,
-              icon: 'arrowUp',
-            },
-            {
-              label: 'Net savings',
-              value: formatCurrency(summary.netSavings),
-              hint: summary.netSavings >= 0 ? 'Surplus for the month' : 'Deficit for the month',
-              icon: 'goals',
-            },
-            {
-              label: 'Savings rate',
-              value: formatPercent(summary.savingsRate),
-              hint: `${formatPercent(summary.savingsRate)} of income kept`,
-              icon: 'analysis',
-            },
-          ].map((item, index) => (
+      {/* Horizontal financial summary: one band, four figures, no panel. */}
+      <section className="border-y border-rule">
+        <dl className="grid grid-cols-2 divide-rule sm:grid-cols-4 sm:divide-x">
+          {summaryFigures.map((item, index) => (
             <div
               key={item.label}
-              className={`reveal px-5 py-4 ${index % 2 === 1 ? 'border-l border-rule-strong' : ''} ${
-                index > 1 ? 'border-t border-rule-strong' : ''
+              className={`py-4 sm:px-6 ${
+                index === 0 ? 'sm:pl-0' : ''
+              } ${index < 2 ? 'border-b border-rule sm:border-b-0' : ''} ${
+                index % 2 === 1 ? 'pl-5 sm:pl-6' : ''
               }`}
-              style={{ '--i': index + 1 }}
             >
-              <div className="flex items-start justify-between gap-2">
-                <p className="eyebrow text-[9px] leading-tight">{item.label}</p>
-                <Icon name={item.icon} className="h-3.5 w-3.5 text-ink/30" />
-              </div>
-              <p className="num mt-2 text-[18px] leading-none text-ink">
+              <dt className="ledger-head">{item.label}</dt>
+              <dd className={`num mt-2 text-[21px] leading-none ${item.tone}`}>
                 <span key={String(item.value)} className="metric-swap">
                   {item.value}
                 </span>
-              </p>
-              <p className="mt-1 text-[10px] leading-tight text-muted">{item.hint}</p>
+              </dd>
+              <p className="mt-1.5 text-[10.5px] leading-tight text-muted">{item.hint}</p>
             </div>
           ))}
-        </div>
-      </div>
+        </dl>
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        <SectionCard
-          className="lg:col-span-7"
-          index="02"
-          title="Spending distribution"
-          description={`Where this month's ${formatCurrency(summary.totalExpenses)} went`}
-          action={
+      <div className="grid gap-9 lg:grid-cols-12 lg:gap-10">
+        <section className="lg:col-span-7">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">
+                Spending distribution
+              </h2>
+              <p className="mt-1 text-[11.5px] text-muted">
+                Where this month&apos;s {formatCurrency(summary.totalExpenses)} went
+              </p>
+            </div>
             <button
               type="button"
               onClick={() => onNavigate('analysis')}
-              className="link-underline text-[11px] font-medium text-navy"
+              className="link-underline text-[11px] font-medium text-cream"
             >
               Full analysis
             </button>
-          }
-        >
-          {distribution.length === 0 ? (
-            <EmptyState
-              icon="analysis"
-              title="No expenses this month"
-              description="Expense categories will appear here as soon as you record spending."
-            />
-          ) : (
-            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-6">
-              <DonutChart
-                data={distribution}
-                centerLabel="Spent"
-                centerValue={formatCurrency(summary.totalExpenses)}
-                total={`${summary.transactionCount.expense} entries`}
-                size={168}
+          </div>
+
+          <div className="mt-6">
+            {distribution.length === 0 ? (
+              <EmptyState
+                icon="analysis"
+                title="No expenses this month"
+                description="Expense categories will appear here as soon as you record spending."
               />
-              <div className="w-full flex-1 border-t border-rule sm:border-l sm:border-t-0 sm:pl-5 sm:pt-2">
-                <Legend
-                  items={distribution.map((item) => ({
-                    label: item.label,
-                    color: item.color,
-                    valueLabel: formatCurrency(item.value),
-                    percent: summary.totalExpenses > 0 ? (item.value / summary.totalExpenses) * 100 : 0,
-                  }))}
+            ) : (
+              <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
+                <DonutChart
+                  data={distribution}
+                  centerLabel="Spent"
+                  centerValue={formatCurrency(summary.totalExpenses)}
+                  total={`${summary.transactionCount.expense} entries`}
+                  size={176}
                 />
+                <div className="w-full flex-1 sm:border-l sm:border-rule sm:pl-7">
+                  <Legend
+                    items={distribution.map((item) => ({
+                      label: item.label,
+                      color: item.color,
+                      valueLabel: formatCurrency(item.value),
+                      percent:
+                        summary.totalExpenses > 0 ? (item.value / summary.totalExpenses) * 100 : 0,
+                    }))}
+                  />
+                </div>
               </div>
+            )}
+          </div>
+        </section>
+
+        <section className="lg:col-span-5 lg:border-l lg:border-rule lg:pl-10">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div>
+              <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">
+                Financial summary
+              </h2>
+              <p className="mt-1 text-[11.5px] text-muted">Generated from this month&apos;s records</p>
             </div>
-          )}
-        </SectionCard>
+            <Badge tone={healthTone[financial.financialHealth]}>
+              {healthLabel[financial.financialHealth]}
+            </Badge>
+          </div>
 
-        <SectionCard
-          className="lg:col-span-5"
-          index="03"
-          title="Financial summary"
-          description="Generated from this month's records"
-          action={<Badge tone={healthTone[financial.financialHealth]}>{healthLabel[financial.financialHealth]}</Badge>}
-        >
-          <p className="text-[12px] leading-relaxed text-ink">{financial.narrative}</p>
+          <p className="mt-4 text-[12.5px] leading-[1.75] text-cream/85">{financial.narrative}</p>
 
-          <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 border-t border-rule pt-3 text-[11.5px]">
+          <dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-3.5 border-t border-rule pt-4 text-[11.5px]">
             <div>
               <dt className="ledger-head">Top category</dt>
-              <dd className="mt-0.5 font-medium text-ink">{financial.topSpendingCategory}</dd>
+              <dd className="mt-1 font-medium text-ink">{financial.topSpendingCategory}</dd>
             </div>
             <div>
               <dt className="ledger-head">Its share</dt>
-              <dd className="num mt-0.5 font-medium text-ink">{formatPercent(financial.topSpendingShare, 0)}</dd>
+              <dd className="num mt-1 font-medium text-ink">
+                {formatPercent(financial.topSpendingShare, 0)}
+              </dd>
             </div>
             <div>
               <dt className="ledger-head">Budget used</dt>
-              <dd className="num mt-0.5 font-medium text-ink">
-                {financial.totalBudget > 0 ? formatPercent(financial.budgetUtilization, 0) : 'No limits set'}
+              <dd className="num mt-1 font-medium text-ink">
+                {financial.totalBudget > 0
+                  ? formatPercent(financial.budgetUtilization, 0)
+                  : 'No limits set'}
               </dd>
             </div>
             <div>
               <dt className="ledger-head">Goals on track</dt>
-              <dd className="num mt-0.5 font-medium text-ink">
+              <dd className="num mt-1 font-medium text-ink">
                 {financial.goals.onTrack} of {financial.goals.total}
               </dd>
             </div>
           </dl>
 
           {recommendations.length > 0 ? (
-            <div className="mt-3 border-l-2 border-coral bg-cream-soft/90 px-3 py-2.5">
-              <p className="ledger-head">Top recommendation</p>
-              <p className="mt-0.5 text-[11.5px] font-medium text-ink">{recommendations[0].title}</p>
-              <p className="mt-0.5 text-[11px] leading-relaxed text-muted">{recommendations[0].description}</p>
+            <div className="mt-6 border-l border-coral/60 pl-4">
+              <p className="eyebrow text-coral/80">Recommended next</p>
+              <p className="mt-1.5 text-[12.5px] font-medium text-white">
+                {recommendations[0].title}
+              </p>
+              <p className="mt-1 text-[11.5px] leading-relaxed text-muted">
+                {recommendations[0].description}
+              </p>
               <button
                 type="button"
                 onClick={() => onNavigate('insights')}
-                className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-navy link-underline"
+                className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-cream link-underline"
               >
                 See all insights
                 <Icon name="arrowRight" className="h-3 w-3" />
               </button>
             </div>
           ) : null}
-        </SectionCard>
+        </section>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        <SectionCard
-          className="lg:col-span-8"
-          index="04"
-          title="Recent transactions"
-          description="Latest activity in the selected month"
-          action={
+      <div className="grid gap-9 border-t border-rule pt-8 lg:grid-cols-12 lg:gap-10">
+        <section className="lg:col-span-7">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">
+                Recent transactions
+              </h2>
+              <p className="mt-1 text-[11.5px] text-muted">Latest activity in the selected month</p>
+            </div>
             <button
               type="button"
               onClick={() => onNavigate('transactions')}
-              className="link-underline text-[11px] font-medium text-navy"
+              className="link-underline text-[11px] font-medium text-cream"
             >
               View all
             </button>
-          }
-          bodyClassName="p-0"
-        >
+          </div>
+
           {recent.length === 0 ? (
             <EmptyState
               icon="transactions"
@@ -307,27 +333,33 @@ export const OverviewPage = ({ month, onNavigate, onAddTransaction }) => {
               }
             />
           ) : (
-            <ul className="divide-y divide-rule">
+            <ul className="mt-3">
               {recent.map((transaction) => {
                 const isIncome = transaction.type === 'income'
                 return (
-                  <li key={transaction.id} className="ledger-row flex items-center gap-3 px-5 py-3">
+                  <li
+                    key={transaction.id}
+                    className="ledger-row flex items-center gap-4 border-b border-rule/70 py-3.5 last:border-b-0"
+                  >
                     <span
-                      className={`flex h-6 w-6 shrink-0 items-center justify-center border ${
-                        isIncome ? 'border-ink/18 text-navy' : 'border-coral/45 text-coral'
+                      className={`w-4 shrink-0 ${
+                        isIncome ? 'text-cream/45' : 'text-coral/75'
                       }`}
+                      aria-hidden="true"
                     >
-                      <Icon name={isIncome ? 'arrowDown' : 'arrowUp'} className="h-2.5 w-2.5" />
+                      <Icon name={isIncome ? 'arrowDown' : 'arrowUp'} className="h-3 w-3" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[12.5px] font-medium text-ink">{transaction.description}</p>
-                      <p className="truncate text-[10.5px] text-muted">
+                      <p className="truncate text-[13px] font-medium text-ink">
+                        {transaction.description}
+                      </p>
+                      <p className="mt-0.5 truncate text-[10.5px] text-muted">
                         {transaction.category} · {formatDate(transaction.date, { short: true })}
                       </p>
                     </div>
                     <p
-                      className={`num shrink-0 text-[12px] font-medium ${
-                        isIncome ? 'text-navy' : 'text-ink'
+                      className={`num shrink-0 text-[13px] font-medium tabular-nums ${
+                        isIncome ? 'text-white' : 'text-cream/85'
                       }`}
                     >
                       {isIncome ? '+' : '−'}
@@ -338,55 +370,60 @@ export const OverviewPage = ({ month, onNavigate, onAddTransaction }) => {
               })}
             </ul>
           )}
-        </SectionCard>
+        </section>
 
-        <SectionCard
-          className="lg:col-span-4"
-          index="05"
-          title="Budget pulse"
-          description="This month's category limits"
-          action={
+        <section className="lg:col-span-5 lg:border-l lg:border-rule lg:pl-10">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="text-[16px] font-medium tracking-[-0.025em] text-white">Budget pulse</h2>
+              <p className="mt-1 text-[11.5px] text-muted">This month&apos;s category limits</p>
+            </div>
             <button
               type="button"
               onClick={() => onNavigate('budgets')}
-              className="link-underline text-[11px] font-medium text-navy"
+              className="link-underline text-[11px] font-medium text-cream"
             >
               Manage
             </button>
-          }
-        >
+          </div>
+
           {budgetSummary.list.length === 0 ? (
-            <p className="text-[11.5px] leading-relaxed text-muted">
+            <p className="mt-4 text-[11.5px] leading-relaxed text-muted">
               No budgets yet. Set a monthly limit to track how quickly each category is burning.
             </p>
           ) : (
             <>
-              <div className="mb-1 flex items-baseline justify-between">
+              <div className="mt-5 flex items-baseline justify-between gap-2">
                 <p className="ledger-head">Overall utilisation</p>
-                <p className="num text-[11px] font-medium text-ink">
+                <p className="num text-[12px] font-medium text-ink">
                   {formatPercent(budgetSummary.overallUtilization, 0)}
                 </p>
               </div>
-              <ProgressBar
-                value={budgetSummary.overallUtilization}
-                tone={budgetSummary.overallUtilization > 100 ? 'coral' : 'navy'}
-                height={5}
-                label="Overall budget utilisation"
-              />
-              <p className="mt-1.5 text-[10px] text-muted">
-                {formatCurrency(budgetSummary.totalSpent)} of {formatCurrency(budgetSummary.totalBudget)} used
+              <div className="mt-2">
+                <ProgressBar
+                  value={budgetSummary.overallUtilization}
+                  tone={budgetSummary.overallUtilization > 100 ? 'coral' : 'navy'}
+                  height={4}
+                  label="Overall budget utilisation"
+                />
+              </div>
+              <p className="mt-2 text-[10.5px] text-muted">
+                {formatCurrency(budgetSummary.totalSpent)} of{' '}
+                {formatCurrency(budgetSummary.totalBudget)} used
               </p>
 
-              <ul className="mt-3 space-y-2.5 border-t border-rule pt-3">
+              <ul className="mt-5 space-y-3.5 border-t border-rule pt-4">
                 {budgetRows.length === 0 ? (
-                  <li className="text-[11px] text-muted">No spending against budgets yet this month.</li>
+                  <li className="text-[11px] text-muted">
+                    No spending against budgets yet this month.
+                  </li>
                 ) : (
                   budgetRows.map((row) => (
                     <li key={row.category}>
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="truncate text-[11.5px] text-ink">{row.category}</span>
+                      <div className="mb-1.5 flex items-center justify-between gap-2">
+                        <span className="truncate text-[12px] text-ink">{row.category}</span>
                         <span
-                          className={`num text-[10px] font-medium ${
+                          className={`num text-[10.5px] font-medium ${
                             row.status === 'over' ? 'text-coral' : 'text-muted'
                           }`}
                         >
@@ -396,7 +433,7 @@ export const OverviewPage = ({ month, onNavigate, onAddTransaction }) => {
                       <ProgressBar
                         value={row.utilization}
                         tone={row.status === 'over' ? 'coral' : 'navy'}
-                        height={4}
+                        height={3}
                         label={`${row.category} budget usage`}
                       />
                     </li>
@@ -405,15 +442,8 @@ export const OverviewPage = ({ month, onNavigate, onAddTransaction }) => {
               </ul>
             </>
           )}
-        </SectionCard>
+        </section>
       </div>
-
-      {spending && Object.keys(spending).length > 0 ? (
-        <p className="border-t border-rule pt-3 px-1 text-[10.5px] leading-relaxed text-muted">
-          Savings overview: {formatCurrency(summary.netSavings)} kept this month. Across all recorded months your
-          running balance is {formatCurrency(balance)}.
-        </p>
-      ) : null}
     </div>
   )
 }

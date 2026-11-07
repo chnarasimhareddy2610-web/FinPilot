@@ -22,14 +22,14 @@ export class ErrorBoundary extends React.Component {
     if (!this.state.hasError) return this.props.children
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-navy px-4">
+      <div className="app-atmosphere flex min-h-screen items-center justify-center px-4">
         <div className="card w-full max-w-md p-6 text-left">
           <p className="eyebrow text-coral">System notice</p>
           <h1 className="display mt-2 text-[24px] text-ink">Something went wrong</h1>
           <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
             FinPilot hit an unexpected error while rendering. Your saved data has not been changed.
           </p>
-          <p className="mt-3 border border-ink/15 bg-cream px-3 py-2 text-left font-mono text-[11px] text-muted">
+          <p className="mt-3 rounded-[12px] border border-cream/12 bg-white/[0.05] px-3 py-2 text-left text-[11px] text-muted">
             {this.state.message}
           </p>
           <button type="button" onClick={this.handleReload} className="btn btn-primary mt-5 w-full">
