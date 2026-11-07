@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment files (keep the example template committed)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Freebuff desktop tooling metadata
+.freebuff/
+
+# Generated verification screenshots
+/preview_*.png
+/screenshot_*.png
